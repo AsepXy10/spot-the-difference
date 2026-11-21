@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>shotter</title>
+<style>body{margin:0;background:#111;color:#fff;font:16px sans-serif}iframe{width:1280px;height:720px;border:0;display:block}#st{padding:8px}#dl{display:inline-block;margin:8px;padding:10px 16px;background:#0f0;color:#000;font-weight:bold}</style>
+</head><body>
+<div id="st">starting</div>
+<a id="dl" href="#" download="shot.jpg">DOWNLOAD JPEG</a>
+<iframe id="f"></iframe>
+<script>
+var q=new URLSearchParams(location.search);
+var shot=q.get('shot')||'play', seed=q.get('seed')||'1', name=q.get('name')||'shot.jpg';
+var f=document.getElementById('f'), st=document.getElementById('st'), dl=document.getElementById('dl');
+dl.download=name;
+f.src='/spot-the-difference/neon-dusk-single.html?shot='+encodeURIComponent(shot)+'&seed='+encodeURIComponent(seed);
+var n=0;
+var t=setInterval(function(){
+  n++;
+  try{
+    var w=f.contentWindow;
+    if(w&&w.__shotReady){
+      clearInterval(t);
+      setTimeout(function(){
+        var c=f.contentDocument.querySelector('canvas');
+        if(!c){st.textContent='NO CANVAS';return;}
+        var out=document.createElement('canvas');
+        out.width=c.width;out.height=c.height;
+        out.getContext('2d').drawImage(c,0,0);
+        out.toBlob(function(b){
+          if(!b){st.textContent='BLOB FAIL';return;}
+          dl.href=URL.createObjectURL(b);
+          st.textContent='READY canvas='+c.width+'x'+c.height+' jpeg='+(b.size/1024).toFixed(1)+' KiB';
+        },'image/jpeg',0.8);
+      },400);
+    } else if(n>160){clearInterval(t);st.textContent='TIMEOUT __shotReady';}
+    else st.textContent='waiting '+n;
+  }catch(e){st.textContent='ERR '+e.message;}
+},250);
+</script>
+</body></html>
